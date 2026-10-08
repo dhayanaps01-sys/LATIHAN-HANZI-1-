@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Latihan Menulis Hanzi</title>
+
+  <!-- Hanzi Writer memakai data bentuk + urutan goresan Hanzi yang benar. -->
+  <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.7.2/dist/hanzi-writer.min.js"></script>
+
+  <style>
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      padding:20px;
+      font-family:"Segoe UI",Arial,sans-serif;
+      background:#f0f3f5;
+      color:#2c3e50;
+      text-align:center;
+    }
+    .main-card{
+      max-width:460px;
+      margin:0 auto;
+      background:#fff;
+      padding:24px;
+      border-radius:14px;
+      box-shadow:0 5px 18px rgba(0,0,0,.08);
+    }
+    h2{margin:0 0 16px}
+    .counter{font-size:15px;color:#666;margin:0 0 10px}
+    .petunjuk-box{
+      background:#fff8f0;
+      padding:12px;
+      border-radius:10px;
+      margin-bottom:14px;
+    }
+    #nama-huruf{
+      display:block;
+      font-family:"Noto Sans SC","Microsoft YaHei","SimSun",sans-serif;
+      font-size:58px;
+      line-height:1.15;
+      color:#e67e22;
+      margin-bottom:4px;
+    }
+    #arti-huruf{font-size:18px;font-weight:700;color:#34495e}
+    #keterangan{font-size:13px;color:#777;margin-top:5px}
+
+    #character-box{
+      width:300px;
+      height:300px;
+      margin:12px auto;
+      border:3px dashed #3498db;
+      border-radius:10px;
+      background:#fff;
+      position:relative;
+      overflow:hidden;
+      touch-action:none;
+    }
+    #character-target{width:300px;height:300px;margin:auto}
+
+    .skor-box{font-size:27px;font-weight:800;margin-top:8px}
+    #teks-status{min-height:42px;font-weight:700;font-size:14px;color:#7f8c8d;margin:8px 0}
+
+    .nav-buttons,.action-buttons{
+      display:flex;
+      justify-content:center;
+      gap:9px;
+      flex-wrap:wrap;
+      margin-top:11px;
+    }
+    button{
+      border:0;
+      border-radius:7px;
+      padding:11px 15px;
+      color:#fff;
+      font-weight:700;
+      font-size:14px;
+      cursor:pointer;
+    }
+    .btn-blue{background:#3498db}
+    .btn-orange{background:#e67e22}
+    .btn-grey{background:#95a5a6}
+    .btn-green{background:#27ae60}
+    button:disabled{background:#dcdde1;color:#7f8c8d;cursor:not-allowed}
+
+    #area-mulai{padding:28px 8px}
+    .hasil-akhir{padding:25px 10px}
+    .total-score{font-size:48px;font-weight:900;margin:15px 0;color:#27ae60}
+    .hasil-detail{font-size:16px;line-height:1.7;color:#555}
+    .progress-akhir{font-size:14px;color:#777;margin-top:10px}
+
+    .info{
+      font-size:13px;
+      color:#777;
+      background:#f8f9fa;
+      border-radius:8px;
+      padding:9px;
+      margin-top:12px;
+    }
+
+    @media(max-width:380px){
+      #character-box,#character-target{width:270px;height:270px}
+      .main-card{padding:16px}
+    }
+  </style>
+</head>
+<body>
+  <div class="main-card">
+    <h2>Latihan Menulis Hanzi</h2>
+
+    <div id="area-mulai">
+      <p><strong>Tekan tombol untuk mulai latihan.</strong></p>
+      <button class="btn-orange" style="font-size:17px;padding:14px 24px" onclick="mulaiGame()">
+        KLIK UNTUK MEMULAI GAME
+      </button>
+      <div class="info">Setiap soal hanya menampilkan 1 Hanzi. Sistem memeriksa urutan dan arah goresan.</div>
+    </div>
+
+    <div id="konten-kuis" style="display:none">
+      <p class="counter">Soal <span id="no-soal">1</span> / <span id="total-soal">12</span></p>
+
+      <div class="petunjuk-box">
+        <strong id="nama-huruf">有</strong>
+        <span id="arti-huruf">yǒu - ada; mempunyai</span>
+        <div id="keterangan"></div>
+      </div>
+
+      <div id="character-box">
+        <div id="character-target"></div>
+      </div>
+
+      <div class="skor-box">Skor: <span id="nilai-skor">100</span></div>
+      <p id="teks-status">Ikuti urutan goresan yang benar.</p>
+
+      <div class="action-buttons">
+        <button class="btn-green" onclick="lihatUrutan()">Lihat Urutan Goresan</button>
+        <button class="btn-orange" onclick="ulangiSoalIni()">Ulangi</button>
+      </div>
+
+      <div class="nav-buttons">
+        <button id="btn-prev" class="btn-grey" onclick="soalSebelumnya()">Sebelumnya</button>
+        <button id="btn-next" class="btn-blue" onclick="soalBerikutnya()">Next Question</button>
+      </div>
+    </div>
+
+    <div id="hasil-akhir" class="hasil-akhir" style="display:none">
+      <h2>🎉 Latihan Selesai!</h2>
+      <p>Kamu sudah menyelesaikan semua Hanzi.</p>
+      <div class="total-score"><span id="skor-akhir">0</span> / <span id="skor-maksimal">1200</span></div>
+      <div class="hasil-detail" id="pesan-akhir"></div>
+      <div class="progress-akhir" id="detail-skor"></div>
+      <div class="nav-buttons">
+        <button class="btn-orange" onclick="ulangGame()">Main Lagi</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+const bankSoal = [
+  { karakter:'有', pinyin:'yǒu', arti:'ada; mempunyai', ket:'Kosakata: 有' },
+  { karakter:'意', pinyin:'yì', arti:'arti; maksud', ket:'Bagian dari kosakata 有意思' },
+  { karakter:'思', pinyin:'sī', arti:'berpikir; pikiran', ket:'Bagian dari kosakata 有意思' },
+  { karakter:'但', pinyin:'dàn', arti:'tetapi; namun', ket:'Bagian pertama dari 但是' },
+  { karakter:'是', pinyin:'shì', arti:'adalah; merupakan', ket:'Bagian kedua dari 但是' },
+  { karakter:'虽', pinyin:'suī', arti:'meskipun; walaupun', ket:'Bagian pertama dari 虽然' },
+  { karakter:'然', pinyin:'rán', arti:'demikian; seperti itu', ket:'Bagian kedua dari 虽然' },
+  { karakter:'次', pinyin:'cì', arti:'kali; urutan', ket:'Kosakata: 次' },
+  { karakter:'玩', pinyin:'wán', arti:'bermain', ket:'Bagian pertama dari 玩儿' },
+  { karakter:'儿', pinyin:'ér', arti:'anak; dipakai sebagai akhiran 儿化', ket:'Bagian kedua dari 玩儿' },
+  { karakter:'晴', pinyin:'qíng', arti:'cerah', ket:'Kosakata: 晴' },
+  { karakter:'百', pinyin:'bǎi', arti:'seratus', ket:'Kosakata: 百' }
+];
+
+let indeksSekarang = 0;
+let writer = null;
+let skor = 100;
+let sedangAnimasi = false;
+let skorSemuaSoal = Array(bankSoal.length).fill(null);
+let selesaiSemuaSoal = Array(bankSoal.length).fill(false);
+
+function mulaiGame(){
+  skorSemuaSoal = Array(bankSoal.length).fill(null);
+  selesaiSemuaSoal = Array(bankSoal.length).fill(false);
+  document.getElementById('area-mulai').style.display='none';
+  document.getElementById('hasil-akhir').style.display='none';
+  document.getElementById('konten-kuis').style.display='block';
+  muatSoal(0);
+}
+
+function ukuranPapan(){
+  return window.innerWidth <= 380 ? 270 : 300;
+}
+
+function muatSoal(indeks){
+  indeksSekarang = indeks;
+  skor = 100;
+  sedangAnimasi = false;
+
+  const soal = bankSoal[indeks];
+  document.getElementById('no-soal').textContent = indeks + 1;
+  document.getElementById('total-soal').textContent = bankSoal.length;
+  document.getElementById('nama-huruf').textContent = soal.karakter;
+  document.getElementById('arti-huruf').textContent = `${soal.pinyin} - ${soal.arti}`;
+  document.getElementById('keterangan').textContent = soal.ket;
+  document.getElementById('nilai-skor').textContent = skor;
+  ubahStatus('Ikuti urutan dan arah goresan yang benar.', '#7f8c8d');
+
+  document.getElementById('btn-prev').disabled = indeks === 0;
+  document.getElementById('btn-next').disabled = false;
+  document.getElementById('btn-next').textContent = indeks === bankSoal.length - 1 ? 'Lihat Hasil Akhir' : 'Next Question';
+
+  const target = document.getElementById('character-target');
+  target.innerHTML = '';
+
+  const size = ukuranPapan();
+  target.style.width = size + 'px';
+  target.style.height = size + 'px';
+
+  writer = HanziWriter.create('character-target', soal.karakter, {
+    width: size,
+    height: size,
+    padding: 18,
+    showOutline: true,
+    showCharacter: false,
+    strokeColor: '#2c3e50',
+    outlineColor: '#d9e1e8',
+    drawingColor: '#3498db',
+    drawingWidth: 5,
+    strokeAnimationSpeed: 1,
+    delayBetweenStrokes: 450,
+    highlightOnComplete: true,
+    highlightColor: '#27ae60'
+  });
+
+  mulaiQuiz();
+}
+
+function mulaiQuiz(){
+  if(!writer) return;
+
+  writer.quiz({
+    showHintAfterMisses: 2,
+    highlightOnComplete: true,
+
+    onMistake: function(strokeData){
+      if(sedangAnimasi) return;
+      skor = Math.max(0, skor - 5);
+      document.getElementById('nilai-skor').textContent = skor;
+      ubahStatus(`Goresan belum tepat. Coba goresan ke-${strokeData.strokeNum + 1} lagi.`, '#e74c3c');
+    },
+
+    onCorrectStroke: function(strokeData){
+      if(sedangAnimasi) return;
+      const selesai = strokeData.strokesRemaining === 0;
+      if(!selesai){
+        ubahStatus(`Benar! Lanjutkan goresan berikutnya. Sisa ${strokeData.strokesRemaining} goresan.`, '#2980b9');
+      }
+    },
+
+    onComplete: function(summaryData){
+      if(sedangAnimasi) return;
+      selesaiSemuaSoal[indeksSekarang] = true;
+      skorSemuaSoal[indeksSekarang] = skor;
+      if(indeksSekarang === bankSoal.length - 1){
+        document.getElementById('btn-next').disabled = false;
+        ubahStatus(`Selesai! Hanzi ${bankSoal[indeksSekarang].karakter} benar. Klik Lihat Hasil Akhir.`, '#27ae60');
+      } else {
+        ubahStatus(`Selesai! Hanzi ${bankSoal[indeksSekarang].karakter} ditulis dengan urutan goresan yang benar.`, '#27ae60');
+      }
+    }
+  });
+}
+
+function lihatUrutan(){
+  if(!writer || sedangAnimasi) return;
+  sedangAnimasi = true;
+  ubahStatus('Perhatikan urutan dan arah goresannya.', '#e67e22');
+
+  writer.cancelQuiz();
+  writer.hideCharacter({ duration: 150 }).then(() => {
+    return writer.animateCharacter({
+      onComplete: function(){
+        sedangAnimasi = false;
+        setTimeout(() => {
+          writer.hideCharacter({ duration: 200 }).then(() => {
+            ubahStatus('Sekarang coba tulis sendiri.', '#7f8c8d');
+            mulaiQuiz();
+          });
+        }, 450);
+      }
+    });
+  });
+}
+
+function ulangiSoalIni(){
+  muatSoal(indeksSekarang);
+}
+
+function soalSebelumnya(){
+  if(indeksSekarang > 0) muatSoal(indeksSekarang - 1);
+}
+
+function soalBerikutnya(){
+  if(indeksSekarang < bankSoal.length - 1){
+    muatSoal(indeksSekarang + 1);
+  } else if(selesaiSemuaSoal[indeksSekarang]){
+    tampilkanHasilAkhir();
+  }
+}
+
+function tampilkanHasilAkhir(){
+  const totalMaksimal = bankSoal.length * 100;
+  const total = skorSemuaSoal.reduce((jumlah, nilai) => jumlah + (nilai === null ? 0 : nilai), 0);
+  const persen = Math.round((total / totalMaksimal) * 100);
+
+  document.getElementById('konten-kuis').style.display = 'none';
+  document.getElementById('hasil-akhir').style.display = 'block';
+  document.getElementById('skor-akhir').textContent = total;
+  document.getElementById('skor-maksimal').textContent = totalMaksimal;
+  document.getElementById('detail-skor').textContent = `Nilai keseluruhan: ${persen}%`;
+
+  let pesan = '';
+  if (persen >= 90) pesan = 'Hebat! Kamu sangat baik dalam menulis Hanzi.';
+  else if (persen >= 75) pesan = 'Bagus! Terus latihan agar semakin lancar.';
+  else if (persen >= 60) pesan = 'Lumayan! Coba latihan lagi untuk meningkatkan skor.';
+  else pesan = 'Tetap semangat! Latihan lagi dan perhatikan urutan goresannya.';
+  document.getElementById('pesan-akhir').textContent = pesan;
+}
+
+function ulangGame(){
+  indeksSekarang = 0;
+  skorSemuaSoal = Array(bankSoal.length).fill(null);
+  selesaiSemuaSoal = Array(bankSoal.length).fill(false);
+  document.getElementById('hasil-akhir').style.display = 'none';
+  document.getElementById('konten-kuis').style.display = 'block';
+  muatSoal(0);
+}
+
+function ubahStatus(teks, warna){
+  const el = document.getElementById('teks-status');
+  el.textContent = teks;
+  el.style.color = warna;
+}
+
+window.addEventListener('resize', () => {
+  if(document.getElementById('konten-kuis').style.display !== 'none'){
+    muatSoal(indeksSekarang);
+  }
+});
+</script>
+</body>
+</html>
